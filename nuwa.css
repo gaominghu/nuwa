@@ -1,0 +1,19 @@
+/* CSS declarations go here */
+.images-thumb{
+  width:120px;
+  height:120px;
+  float:left;
+  overflow: hidden;
+}
+
+.images-thumb img{
+  width: 100%;
+  height: auto;
+}
+
+.mastfoot{
+  display: block;
+  clear: both;
+  margin-top: 13px;
+  padding-top: 20px;  
+}

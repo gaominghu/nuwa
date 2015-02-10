@@ -1,0 +1,10 @@
+<template name="albumview">
+  <div class="imageView">
+    {{#each images}}
+      <div class="images-thumb">
+        <p>order: {{this.order}}</p>
+        <a href="{{this.url}}" target="_blank"><img src="{{this.url}}" alt="" class="thumbnail" /></a>
+      </div>
+    {{/each}}
+  </div>
+</template>

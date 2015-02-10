@@ -1,0 +1,9 @@
+<template name="list">
+  <div class="list">
+      <ul>
+     {{#each albumsCollection}} 
+        <li><a href="/albums/{{this.id}}">{{this.id}}</a> ({{this.total}}) </li>
+     {{/each}}
+     </ul>
+  </div>
+</template>
