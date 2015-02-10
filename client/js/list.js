@@ -10,5 +10,8 @@ Template.list.helpers({
       });
     });
     return albumsList;
+  },
+  'moment': function(date){
+    return moment(Number(date)).format('DD/MM/YY - hh:mm:ss');
   }
 });

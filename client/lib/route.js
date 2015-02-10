@@ -15,14 +15,15 @@ Router.route('/', function() {
 });
 
 Router.route('/albums/:_id', function() {
-  console.log(this.params._id);
-  var items = Images.find({
-    album: Number(this.params._id)
+  var unixdate = this.params._id,
+  items = Images.find({
+    album: Number(unixdate)
   },{sort:[["order", "asc"]]});
   console.log(items);
   this.render('albumview', {
     data: {
-      images:items
+      images: items,
+      date: unixdate
     }
   });
 });
