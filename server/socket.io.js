@@ -11,6 +11,8 @@ var Fiber = Meteor.npmRequire('fibers'),
 base = fs.realpathSync('.');
 //if address already in use, it throw an error.
 
+
+
 var getNumber = function(name) {
   var nb = (name.replace(Meteor.settings.machine.name, '').replace(Meteor.settings.machine.extension, ''));
 
@@ -41,41 +43,74 @@ var saveFile = function(data, response, buffer) {
   saveCount++;
 }
 
-io.on('connection', function(socket) {
-  console.log('socket.io: Connected !');
-  socket.on('image-saved', function(data) {
-    Fiber(function() {
-      if (saveCount == 0) {
-        album = Date.now();
-        request.get({
-          url: data.src,
-          encoding: null
-        }, Meteor.bindEnvironment(function(e, r, buffer) {
-          if (e) {
-            console.log('err on request', e)
-          } else {
-            saveFile(data, r, buffer);
-          }
-        }));
-      } else if (saveCount < maxSave) {
-        request.get({
-          url: data.src,
-          encoding: null
-        }, Meteor.bindEnvironment(function(e, r, buffer) {
-          if (e) {
-            console.log('err on request', e)
-          } else {
-            saveFile(data, r, buffer);
-          }
-        }));
-      } else {
-        saveCount = 0;
+var saveOrUpdateSocketState = function(socket, state) {
+  Fiber(function() {
+    //console.log(socket.handshake);
+    Socket.upsert({
+      address: socket.handshake.address
+    }, {
+      $set: {
+        address: socket.handshake.address,
+        time: socket.handshake.time,
+        connected: state,
+        host: socket.handshake.headers.host
       }
-      Meteor.clearTimeout(timeoutHandler);
-      timeoutHandler = Meteor.setTimeout(function() {
-        saveCount = 0;
-      }, timeoutDuration);
-      console.log('new file:', data);
-    }).run();
-  });
+    })
+    console.log('state: ', state);
+    updateMaxImageNumber();
+  }).run();
+}
+
+var updateMaxImageNumber = function() {
+  Fiber(function() {
+    maxSave = Socket.find({
+      connected: true
+    }).count();
+    console.log(maxSave);
+  }).run()
+}
+
+io.on('connection', function(socket) {
+
+  console.log('socket.io: Connected !');
+  saveOrUpdateSocketState(socket, true);
+
+  socket.on('image-saved', function(data) {
+      Fiber(function() {
+        if (saveCount === 0) {
+          album = Date.now();
+          request.get({
+            url: data.src,
+            encoding: null
+          }, Meteor.bindEnvironment(function(e, r, buffer) {
+            if (e) {
+              console.log('err on request', e)
+            } else {
+              saveFile(data, r, buffer);
+            }
+          }));
+        } else if (saveCount < maxSave) {
+          request.get({
+            url: data.src,
+            encoding: null
+          }, Meteor.bindEnvironment(function(e, r, buffer) {
+            if (e) {
+              console.log('err on request', e)
+            } else {
+              saveFile(data, r, buffer);
+            }
+          }));
+        } else {
+          saveCount = 0;
+        }
+        Meteor.clearTimeout(timeoutHandler);
+        timeoutHandler = Meteor.setTimeout(function() {
+          saveCount = 0;
+        }, timeoutDuration);
+        console.log('new file:', data);
+      }).run();
+    })
+    .on('disconnect', function() {
+      saveOrUpdateSocketState(socket, false);
+    });
 });
