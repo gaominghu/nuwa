@@ -1,0 +1,1 @@
+Socket = new Mongo.Collection("socket.io");
