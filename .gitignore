@@ -61,6 +61,5 @@ __MACOSX/
 .meteor/meteorite
 .demeteorized
 auth.js
-settings.json
 *.mp4
 temp/**

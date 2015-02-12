@@ -1,0 +1,10 @@
+{
+  "service":{
+      "name":"nuwa",
+      "port":8080
+  },
+  "machine":{
+    "name":"voldenuit",
+    "extension":".local" 
+  }
+}
