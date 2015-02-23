@@ -13,6 +13,10 @@
         {
           "name":"video-layer",
           "source":"./public/video/"
+        },
+        {
+          "name":"assembly",
+          "source":"auto"
         }
     ]
   }
