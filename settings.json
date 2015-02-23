@@ -7,12 +7,15 @@
     "name":"voldenuit",
     "extension":".local" 
   },
+  "destinationPath":"/Users/gabrielstuff/Desktop",
   "composition":{
     "default":"video-layer",
     "effect":[
         {
           "name":"video-layer",
-          "source":"./public/video/"
+          "source":"sunglasshut",
+          "type": "clients",
+          "basename":"%04d.png"
         },
         {
           "name":"assembly",

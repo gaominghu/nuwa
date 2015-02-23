@@ -12,7 +12,8 @@
     "effect":[
         {
           "name":"video-layer",
-          "source":"./public/video/"
+          "source":"./public/video/",
+          "basename":"video_overlay%04d.png"
         },
         {
           "name":"assembly",
