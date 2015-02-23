@@ -16,3 +16,8 @@ curl https://install.meteor.com/ | sh
 ## Details about configuration
 
 nuwa is waiting for url in the form of : `http://url-01.local/folder/file.jpg`, it takes the photos number from the digits after the domain name.
+
+## Todo
+
+[ ] Add bonjour as package
+[ ] Add compositing option settings
