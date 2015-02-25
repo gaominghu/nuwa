@@ -10,6 +10,7 @@
   "destinationPath":"/Users/gabrielstuff/Desktop",
   "composition":{
     "default":"video-layer",
+    "audio":true,
     "effect":[
         {
           "name":"video-layer",

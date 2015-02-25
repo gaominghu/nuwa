@@ -37,10 +37,16 @@ var _ = Meteor.npmRequire('lodash'),
     var basepath = pathHelper.join(process.env.PWD, 'projects', param.type);
     //would be nice to use : 'crop=640:360:0:0'
     var filenameTmp = pathHelper.join(process.env.PWD, 'temp','temp_' + Date.now() + '.mp4';
-    ffmpeg()
+    var command = ffmpeg()
       .addInput(media)
       .inputOptions('-loop 1')
-      .addInput(pathHelper.join(basepath, param.source, param.basename))
+      .addInput(pathHelper.join(basepath, param.source, param.basename));
+
+      if(Meteor.settings.composition.audio){
+        command.addInput(pathHelper.join(basepath, param.source, 'audio.mp3'))
+      }
+
+      command
       .complexFilter(['overlay=shortest=1'])
       .videoCodec(videoCodec)
       .outputOptions(outputOptions)

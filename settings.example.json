@@ -7,12 +7,15 @@
     "name":"voldenuit",
     "extension":".local" 
   },
+  "destinationPath":"/your/path",
   "composition":{
     "default":"video-layer",
+    "audio":true,
     "effect":[
         {
           "name":"video-layer",
           "source":"./public/video/",
+          "type": "clients",
           "basename":"video_overlay%04d.png"
         },
         {
