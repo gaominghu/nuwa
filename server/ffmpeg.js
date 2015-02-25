@@ -1,6 +1,6 @@
 var _ = Meteor.npmRequire('lodash'),
   pathHelper = Meteor.npmRequire('path'),
-  fs = Meteor.npmRequire('fs'),
+  fs = Meteor.npmRequire('fs.extra'),
  stream = Meteor.npmRequire("stream"),
 
   videoLayer = function(media, resolveCallback) {
@@ -61,9 +61,17 @@ var _ = Meteor.npmRequire('lodash'),
       })
       .on('end', function() {
         console.log('ffmpeg - finished to layer images');
-        fs.renameSync(filenameTmp, pathHelper.join(Meteor.settings.destinationPath, 'video_'+Date.now()+'.mp4'));
+        //fs.renameSync(filenameTmp, pathHelper.join(Meteor.settings.destinationPath, 'video_'+Date.now()+'.mp4'));
         //lets cleanup the mess
-        fs.unlinkSync(filenameTmp);
+        //fs.unlinkSync(filenameTmp);
+
+        fs.move(filenameTmp, pathHelper.join(Meteor.settings.destinationPath, 'video_'+Date.now()+'.mp4'), function (err) {
+          if (err) {
+            throw err;
+          } else {
+            console.log(pathHelper.join(Meteor.settings.destinationPath, 'video_'+Date.now()+'.mp4') +' has been created.');
+          }
+        });
         fs.unlinkSync(media);
         resolveCallback(null, 'ffmpeg - finished to layer images');
       })
