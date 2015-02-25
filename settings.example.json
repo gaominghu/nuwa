@@ -9,7 +9,7 @@
   },
   "destinationPath":"/your/path",
   "output":{
-    "bitrate":9000
+    "bitrate": 3000
   },
   "composition":{
     "default":"video-layer",
