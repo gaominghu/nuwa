@@ -8,6 +8,9 @@
     "extension":".local" 
   },
   "destinationPath":"/Users/gabrielstuff/Desktop",
+  "output":{
+    "bitrate": 3000
+  },
   "composition":{
     "default":"video-layer",
     "audio":true,

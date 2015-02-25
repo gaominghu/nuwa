@@ -8,6 +8,9 @@
     "extension":".local" 
   },
   "destinationPath":"/your/path",
+  "output":{
+    "bitrate":9000
+  },
   "composition":{
     "default":"video-layer",
     "audio":true,

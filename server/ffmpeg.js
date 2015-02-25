@@ -9,14 +9,13 @@ var _ = Meteor.npmRequire('lodash'),
         name: 'video-layer'
       }),
       videoCodec = 'libx264', //mpeg4
-      bitrate = 12000,
+      bitrate = Meteor.settings.output.bitrate,
       outputOptions = [
         '-movflags +faststart',
         '-threads 0',
         '-b:v ' + bitrate + 'k',
         '-maxrate ' + bitrate + 'k',
-        '-bufsize ' + 2 * bitrate + 'k',
-        '-preset ultrafast',
+        '-bufsize ' + 2 * bitrate + 'k'
       ];
 
     console.log('found param:', param);
