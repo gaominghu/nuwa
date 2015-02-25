@@ -10,6 +10,14 @@ curl https://install.meteor.com/ | sh
 ```
 
 Create a `temp` folder and a `projects/clients` folder at the root of meteor
+```
+$ mkdir temp
+$ mkdir -p projects/clients
+```
+and put your client folder
+```
+$ cp -r /path/to/myclientfolder projects/clients
+```
 
 ## Run
 
