@@ -36,7 +36,7 @@ var _ = Meteor.npmRequire('lodash'),
 
     var basepath = pathHelper.join(process.env.PWD, 'projects', param.type);
     //would be nice to use : 'crop=640:360:0:0'
-    var filenameTmp = pathHelper.join(process.env.PWD, 'temp','temp_' + Date.now() + '.mp4';
+    var filenameTmp = pathHelper.join(process.env.PWD, 'temp','temp_' + Date.now() + '.mp4');
     var command = ffmpeg()
       .addInput(media)
       .inputOptions('-loop 1')
