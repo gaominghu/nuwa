@@ -1,5 +1,6 @@
 var _ = Meteor.npmRequire('lodash'),
   pathHelper = Meteor.npmRequire('path'),
+  fs = Meteor.npmRequire('fs'),
  stream = Meteor.npmRequire("stream"),
 
   videoLayer = function(media, resolveCallback) {
@@ -10,7 +11,7 @@ var _ = Meteor.npmRequire('lodash'),
       videoCodec = 'libx264', //mpeg4
       bitrate = 12000,
       outputOptions = [
-        //'-movflags +faststart',
+        '-movflags +faststart',
         '-threads 0',
         '-b:v ' + bitrate + 'k',
         '-maxrate ' + bitrate + 'k',
@@ -35,6 +36,7 @@ var _ = Meteor.npmRequire('lodash'),
 
     var basepath = pathHelper.join(process.env.PWD, 'projects', param.type);
     //would be nice to use : 'crop=640:360:0:0'
+    var filenameTmp = pathHelper.join(process.env.PWD, 'temp','temp_' + Date.now() + '.mp4';
     ffmpeg()
       .addInput(media)
       .inputOptions('-loop 1')
@@ -53,9 +55,11 @@ var _ = Meteor.npmRequire('lodash'),
       })
       .on('end', function() {
         console.log('ffmpeg - finished to layer images');
+        fs.renameSync(filenameTmp, pathHelper.join(Meteor.settings.destinationPath, 'video_'+Date.now()+'.mp4'));
+        fs.unlinkSync(filenameTmp);
         resolveCallback(null, 'ffmpeg - finished to layer images');
       })
-      .save(pathHelper.join(Meteor.settings.destinationPath, 'video_'+Date.now()+'.mp4'));
+      .save(filenameTmp);
   };
 
 Meteor.methods({
