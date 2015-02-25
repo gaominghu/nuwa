@@ -56,7 +56,9 @@ var _ = Meteor.npmRequire('lodash'),
       .on('end', function() {
         console.log('ffmpeg - finished to layer images');
         fs.renameSync(filenameTmp, pathHelper.join(Meteor.settings.destinationPath, 'video_'+Date.now()+'.mp4'));
+        //lets cleanup the mess
         fs.unlinkSync(filenameTmp);
+        fs.unlinkSync(media);
         resolveCallback(null, 'ffmpeg - finished to layer images');
       })
       .save(filenameTmp);
