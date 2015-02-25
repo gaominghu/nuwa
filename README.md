@@ -16,7 +16,7 @@ $ mkdir -p projects/clients
 ```
 and put your client folder
 ```
-$ cp /path/to/myclientfolder projects/clients
+$ cp -r /path/to/myclientfolder projects/clients
 ```
 
 ## Run
