@@ -74,26 +74,23 @@ var initSocket = function() {
           url: data.src,
           encoding: null
         }).pipe(tempfile);
-        tempfile.on('finish', function() {
-          
-          try {
-  
-            Fiber(function() {
+        tempfile.on('close', function() {
+          Fiber(function() {
+            try {
               var GMimages = gm(filename).gravity('Center'),
-              synchThumb = Meteor.wrapAsync(GMimages.thumb, GMimages);
+                synchThumb = Meteor.wrapAsync(GMimages.thumb, GMimages);
               var res = synchThumb(640, 360, filename, 100);
-              
-              Meteor.call('ffmpeg', "custom", filename, function(error, result) {
-                if (error) {
-                  console.log('ffmpeg - Error: ', error);
-                } else {
-                  console.log('ffmpeg - Result: ', result);
-                }
-              });
-            }).run();
-          } catch (ex) {
-            console.log('error with gm:', ex);
-          }
+            } catch (ex) {
+              console.log('error with gm:', ex);
+            }
+            Meteor.call('ffmpeg', "custom", filename, function(error, result) {
+              if (error) {
+                console.log('ffmpeg - Error: ', error);
+              } else {
+                console.log('ffmpeg - Result: ', result);
+              }
+            });
+          }).run();
         });
       }
     })
