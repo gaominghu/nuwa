@@ -12,7 +12,7 @@
     "bitrate": 3000
   },
   "composition":{
-    "default":"video-layer",
+    "default":"assembly",
     "audio":true,
     "effect":[
         {
