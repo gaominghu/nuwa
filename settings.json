@@ -1,6 +1,6 @@
 {
   "service":{
-      "name":"nuwa",
+      "name":"ouba",
       "port":8080
   },
   "machine":{
@@ -11,9 +11,11 @@
   "output":{
     "bitrate": 3000
   },
+  "simulateConnection":true,
+  "maxImageNumber": 64,
   "composition":{
     "default":"assembly",
-    "audio":true,
+    "audio":false,
     "effect":[
         {
           "name":"video-layer",
@@ -23,7 +25,9 @@
         },
         {
           "name":"assembly",
-          "source":"auto"
+          "source":"auto",
+          "type": "clients",
+          "basename":"%04d.jpg"
         }
     ]
   }

@@ -2,5 +2,6 @@
 Meteor.startup(function() {
   mdns = Meteor.npmRequire('mdns');
   var ad = mdns.createAdvertisement(mdns.tcp(Meteor.settings.service.name), Meteor.settings.service.port);
+  console.log('Advertise for '+Meteor.settings.service.name+':'+Meteor.settings.service.port);
   ad.start();
 });

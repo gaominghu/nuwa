@@ -11,6 +11,8 @@
   "output":{
     "bitrate": 3000
   },
+  "simulateConnection":true,
+  "maxImageNumber": 64, 
   "composition":{
     "default":"video-layer",
     "audio":true,
@@ -23,7 +25,9 @@
         },
         {
           "name":"assembly",
-          "source":"auto"
+          "source":"auto",
+          "type": "clients",
+          "basename":"%04d.jpg"
         }
     ]
   }
