@@ -7,7 +7,7 @@ var Fiber = Meteor.npmRequire('fibers'),
   album = '',
   maxSave = 64,
   timeoutHandler = '',
-  timeoutDuration = 1000 * 20;
+  timeoutDuration = 2 * 1000;
 base = fs.realpathSync('.');
 //if address already in use, it throw an error.
 
@@ -25,6 +25,9 @@ var initSocket = function() {
     saveOrUpdateSocketState(socket, true);
     socket.on('image-saved', function(data) {
         Fiber(function() {
+          if (saveCount > maxSave) {
+            saveCount = 0;
+          }
           if (saveCount === 0) {
             album = Date.now();
             request.get({
@@ -90,7 +93,7 @@ var saveFile = function(data, response, buffer) {
   }, function(error) {
     if (error) throw error;
     newFile.name(data.src.split('/').pop());
-    newFile.album = album;
+    newFile.album = data.src.match(/snap-\d{10}/g);
     newFile.order = order;
     Images.insert(newFile);
   });
