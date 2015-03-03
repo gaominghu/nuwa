@@ -121,6 +121,11 @@ var saveFile = function(data, response, buffer) {
   if (order < 0) {
     order = saveCount;
   }
+
+  // Check if this is the last file (should get as much as connected session)
+  // Save the file in temp folder and process the video with ffmpeg command
+  // Then save the files and the video
+
   newFile.attachData(buffer, {
     type: 'image/jpg'
   }, function(error) {
