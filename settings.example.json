@@ -7,19 +7,19 @@
     "name":"voldenuit",
     "extension":".local" 
   },
-  "destinationPath":"/Users/gabrielstuff/Desktop",
+  "destinationPath":"/your/path",
   "output":{
     "bitrate": 3000
   },
   "composition":{
-    "default":"assembly",
+    "default":"video-layer",
     "audio":true,
     "effect":[
         {
           "name":"video-layer",
-          "source":"sunglasshut",
+          "source":"./public/video/",
           "type": "clients",
-          "basename":"%04d.png"
+          "basename":"video_overlay%04d.png"
         },
         {
           "name":"assembly",

@@ -17,7 +17,8 @@ Router.route('/', function() {
 Router.route('/albums/:_id', function() {
   var unixdate = this.params._id,
     items = Images.find({
-      album: Number(unixdate)
+      //album: Number(unixdate)
+      album: this.params._id
     }, {
       sort: [
         ["order", "asc"]

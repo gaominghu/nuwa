@@ -63,3 +63,6 @@ __MACOSX/
 auth.js
 *.mp4
 temp/**
+
+settings.json
+projects/clients

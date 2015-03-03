@@ -3,11 +3,12 @@ var Fiber = Meteor.npmRequire('fibers'),
   fs = Meteor.npmRequire('fs'),
   request = Meteor.npmRequire('request'),
   mkdirp = Meteor.npmRequire('mkdirp'),
+  gm = Meteor.npmRequire('gm');
   saveCount = 0,
   album = '',
   maxSave = 64,
   timeoutHandler = '',
-  timeoutDuration = 2 * 1000;
+  timeoutDuration = 1000 * 20;
 base = fs.realpathSync('.');
 //if address already in use, it throw an error.
 
@@ -17,13 +18,16 @@ var initSocket = function() {
       connected: false
     }
   }, {
-    multi: true
-  });
+      multi: true
+    });
   io = Meteor.npmRequire('socket.io')(Meteor.settings.service.port);
   io.on('connection', function(socket) {
     console.log('socket.io: Connected !');
+
     saveOrUpdateSocketState(socket, true);
+
     socket.on('image-saved', function(data) {
+      if (Meteor.settings.composition.default === "assembly") {
         Fiber(function() {
           if (saveCount > maxSave) {
             saveCount = 0;
@@ -34,23 +38,23 @@ var initSocket = function() {
               url: data.src,
               encoding: null
             }, Meteor.bindEnvironment(function(e, r, buffer) {
-              if (e) {
-                console.log('err on request', e)
-              } else {
-                saveFile(data, r, buffer);
-              }
-            }));
+                if (e) {
+                  console.log('err on request', e)
+                } else {
+                  saveFile(data, r, buffer);
+                }
+              }));
           } else if (saveCount < maxSave) {
             request.get({
               url: data.src,
               encoding: null
             }, Meteor.bindEnvironment(function(e, r, buffer) {
-              if (e) {
-                console.log('err on request', e)
-              } else {
-                saveFile(data, r, buffer);
-              }
-            }));
+                if (e) {
+                  console.log('err on request', e)
+                } else {
+                  saveFile(data, r, buffer);
+                }
+              }));
           } else {
             saveCount = 0;
           }
@@ -60,7 +64,39 @@ var initSocket = function() {
           }, timeoutDuration);
           console.log('new file:', data);
         }).run();
-      })
+      } else if (Meteor.settings.composition.default === "video-layer") {
+
+        var filename = process.env.PWD + '/temp/temp_' + Date.now() + '.jpg';
+        var tempfile = fs.createWriteStream(filename);
+        tempfile.on('error', function(err) {
+          console.log('error on tempfile: ', err);
+          //fileObj.emit('Can not open this folder.');
+          //return 'error on tempfile: ' + err
+        });
+        request({
+          url: data.src,
+          encoding: null
+        }).pipe(tempfile);
+        tempfile.on('close', function() {
+          Fiber(function() {
+            try {
+              var GMimages = gm(filename).gravity('Center'),
+                synchThumb = Meteor.wrapAsync(GMimages.thumb, GMimages);
+              var res = synchThumb(640, 360, filename, 100);
+            } catch (ex) {
+              console.log('error with gm:', ex);
+            }
+            Meteor.call('ffmpeg', "custom", filename, function(error, result) {
+              if (error) {
+                console.log('ffmpeg - Error: ', error);
+              } else {
+                console.log('ffmpeg - Result: ', result);
+              }
+            });
+          }).run();
+        });
+      }
+    })
       .on('disconnect', function() {
         saveOrUpdateSocketState(socket, false);
       });
@@ -103,19 +139,19 @@ var saveFile = function(data, response, buffer) {
 var saveOrUpdateSocketState = function(socket, state) {
   // the socket.handshake.headers.host is the one from the server not the client :/
   // need to find a better solution...
-  
+
   Fiber(function() {
     //console.log(socket.handshake);
     Socket.upsert({
       address: socket.handshake.address
     }, {
-      $set: {
-        address: socket.handshake.address,
-        time: socket.handshake.time,
-        connected: state,
-        host: socket.handshake.headers.host
-      }
-    })
+        $set: {
+          address: socket.handshake.address,
+          time: socket.handshake.time,
+          connected: state,
+          host: socket.handshake.headers.host
+        }
+      })
     console.log('state: ', state);
     updateMaxImageNumber();
   }).run();
