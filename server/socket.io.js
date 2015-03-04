@@ -46,13 +46,12 @@ var initSocket = function() {
           }
           if (saveCount === 0) {
             tempPath = pathHelper.join(process.env.PWD, '.temp');
-            album = (album_name) ? album_name : Date.now()
-            //console.log('album: ', album);
+            album = (album_name) ? album_name : Date.now();
             tempPath = pathHelper.join(tempPath, album.toString());
             mkdirp.sync(tempPath);
           }
 
-          data.album_name = album;
+          data.album_name = album.toString();
           var number = (data.src.indexOf('snap') >= 0) ? getNumber(data.src) : getNumber();
           data.number = number;
 
