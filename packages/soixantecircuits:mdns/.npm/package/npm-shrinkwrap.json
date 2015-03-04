@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "mdns": {
+      "version": "2.2.2",
+      "dependencies": {
+        "bindings": {
+          "version": "1.2.1"
+        },
+        "nan": {
+          "version": "1.4.3"
+        }
+      }
+    }
+  }
+}
