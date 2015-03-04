@@ -52,8 +52,10 @@ var initSocket = function() {
           }
 
           data.album_name = album.toString();
-          var number = (data.src.indexOf('snap') >= 0) ? getNumber(data.src) : getNumber(),
-            filename = pathHelper.join(tempPath, zeroPad(number, 4) + '.jpg'),
+          var number = (data.src.indexOf('snap') >= 0) ? getNumber(data.src) : getNumber();
+          data.number = number;
+
+          var  filename = pathHelper.join(tempPath, zeroPad(number, 4) + '.jpg'),
             tempfile = fs.createWriteStream(filename);
 
           tempfile.on('error', function(err) {
@@ -140,33 +142,36 @@ var initSocket = function() {
 }
 
 var getNumber = function(fullurl) {
-  if (fullurl === undefined) {
-    return saveCount;
-  } else {
-    var url = Meteor.npmRequire('url');
-    var pathname = url.parse(fullurl).pathname.split('/').pop();
+    //var url = require('url');
+    //var pathname = url.pathname(fullurl).split('/').pop();
     //here we should finalize the treatment :)
-    var nb = (fullurl.replace(Meteor.settings.machine.name, '').replace(Meteor.settings.machine.extension, ''));
-
-    if (nb === '') {
-      nb = -1;
-    } else {
-      nb = Number(nb);
-      if (nb === NaN) {
-        nb = -1
+    ///var nb = (fullurl.replace(Meteor.settings.machine.name, '').fullurl(Meteor.settings.machine.extension, ''));
+    var match = fullurl.match(/snap-\d{10}-(\d*)/);
+    if ( match && match.length > 1) {
+      var nb = match[1];
+      if (nb === '') {
+        nb = -1;
+      } else {
+        nb = Number(nb);
+        if (nb === NaN) {
+          nb = -1
+        }
       }
+      return nb;
     }
-    return nb;
-  }
+    else {
+      return saveCount;
+    }
 }
 
 var saveFile = function(data, response, buffer) {
-  var order = getNumber(response.request.uri.hostname),
+  var order = data.number,
     newFile = new FS.File();
   //Hacks while testing on localmachine
   if (order < 0) {
     order = saveCount;
   }
+  console.log(order);
 
   newFile.attachData(buffer, {
     type: 'image/jpg'
