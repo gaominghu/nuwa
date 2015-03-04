@@ -46,13 +46,12 @@ var initSocket = function() {
           }
           if (saveCount === 0) {
             tempPath = pathHelper.join(process.env.PWD, '.temp');
-            album = (album_name) ? album_name : Date.now()
-            //console.log('album: ', album);
+            album = (album_name) ? album_name : Date.now();
             tempPath = pathHelper.join(tempPath, album.toString());
             mkdirp.sync(tempPath);
           }
 
-          data.album_name = album;
+          data.album_name = album.toString();
           var number = (data.src.indexOf('snap') >= 0) ? getNumber(data.src) : getNumber(),
             filename = pathHelper.join(tempPath, zeroPad(number, 4) + '.jpg'),
             tempfile = fs.createWriteStream(filename);
@@ -141,13 +140,13 @@ var initSocket = function() {
 }
 
 var getNumber = function(fullurl) {
-  if (hostname === undefined) {
+  if (fullurl === undefined) {
     return saveCount;
   } else {
-    var url = require('url');
-    var pathname = url.pathname(fullurl).split('/').pop();
+    var url = Meteor.npmRequire('url');
+    var pathname = url.parse(fullurl).pathname.split('/').pop();
     //here we should finalize the treatment :)
-    var nb = (fullurl.replace(Meteor.settings.machine.name, '').fullurl(Meteor.settings.machine.extension, ''));
+    var nb = (fullurl.replace(Meteor.settings.machine.name, '').replace(Meteor.settings.machine.extension, ''));
 
     if (nb === '') {
       nb = -1;

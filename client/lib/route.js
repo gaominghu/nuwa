@@ -17,7 +17,6 @@ Router.route('/', function() {
 Router.route('/albums/:_id', function() {
   var unixdate = this.params._id,
     items = Images.find({
-      //album: Number(unixdate)
       album: this.params._id
     }, {
       sort: [
@@ -55,7 +54,7 @@ Router.route('/albums/:_id', function() {
     }
   });
 
-  beforeRoute = '/albums/';
+  var beforeRoute = '/albums/';
   this.render('albumview', {
     data: {
       images: items,
