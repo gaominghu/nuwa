@@ -6,41 +6,71 @@ var Fiber = Meteor.npmRequire('fibers'),
   mkdirp = Meteor.npmRequire('mkdirp'),
   gm = Meteor.npmRequire('gm'),
   saveCount = 0,
+  saveFinishedCount = 0,
   album = '',
   // maxSave is updated on the number of socketio connexions
   maxSave = Meteor.settings.maxImageNumber,
-  shouldSave = false,
   timeoutHandler = '',
-  timeoutDuration = 120 * 1000,
+  timeoutDuration = 30 * 1000,
   tempPath = '',
   base = fs.realpathSync('.');
+
+
+var ffmpegAssembly = function(album_name) {
+  Fiber(function() {
+      Meteor.call('ffmpeg', 'assembly', getFolderPath(album_name), function(error, result) {
+        if (error) {
+          console.log('ffmpeg - Error: ', error);
+        } else {
+          console.log('ffmpeg - Result: ', result);
+        }
+      });
+  }).run();
+}
 
 var zeroPad = function (str, max) {
   str = str.toString();
   return str.length < max ? zeroPad("0" + str, max) : str;
 }
 
-var initAlbum = function(album_name){
+var getFolderPath = function(album_name){
   tempPath = pathHelper.join(process.env.PWD, '.temp');
   album = (album_name) ? album_name : Date.now();
   tempPath = pathHelper.join(tempPath, album.toString());
-  mkdirp.sync(tempPath);
+  return tempPath;
 }
 
-var closeAlbum = function(album_name, filename){
+var initAlbum = function(album_name){
+  mkdirp.sync(getFolderPath(album_name));
+
+  Meteor.clearTimeout(timeoutHandler);
+  timeoutHandler = Meteor.setTimeout(function() {
+    console.log('TIMEOUT, we did not receive all videos');
+    console.log('saving the album with what we have now.');
+    closeAlbum(album_name);
+  }, timeoutDuration);
+
+  saveCount = 0;
+  saveFinishedCount = 0;
+}
+
+var closeAlbum = function(album_name){
   console.log("closing album");
   Meteor.clearTimeout(timeoutHandler);
   saveCount = 0;
-  shouldSave = false;
-  Fiber(function() {
-      Meteor.call('ffmpeg', 'assembly', pathHelper.dirname(filename), function(error, result) {
-        if (error) {
-        console.log('ffmpeg - Error: ', error);
-        } else {
-        console.log('ffmpeg - Result: ', result);
-        }
-        });
-      }).run();
+  saveFinishedCount = 0;
+  ffmpegAssembly(album_name);
+}
+
+var getAlbumName = function(path){
+  var album_name = path.match(/snap-\d*/g);
+  if (album_name){
+    album_name = album_name.toString();
+  }
+  else {
+    album_name = 'missing_album_name';
+  }
+  return album_name;
 }
 
 var initSocket = function() {
@@ -60,17 +90,14 @@ var initSocket = function() {
       if (Meteor.settings.composition.default === "assembly") {
         Fiber(function() {
           console.log('src: ' + data.src);
-          data.album_name = data.src.match(/snap-\d*/g).toString();
+          data.album_name = getAlbumName(data.src);
           data.number = getNumber(data.src);
 
           if (saveCount === 0) {
             initAlbum(data.album_name);
           }
-          if (saveCount === maxSave - 1) {
-            shouldSave = true;
-          }
 
-          var  filename = pathHelper.join(tempPath, zeroPad(data.number, 4) + '.jpg'),
+          var  filename = pathHelper.join(getFolderPath(data.album_name), zeroPad(data.number, 4) + '.jpg'),
           tempfile = fs.createWriteStream(filename);
 
           tempfile.on('error', function(err) {
@@ -78,16 +105,18 @@ var initSocket = function() {
           });
 
           tempfile.on('close', function() {
-            if (shouldSave) {
+            saveFinishedCount++;
+            console.log ('Saved ' + saveFinishedCount + '/ ' + maxSave);
+            if (saveFinishedCount === maxSave) {
               // not working, this does a video with only one frame and a lot of erros
               // I (emm) think it is because all files aren't saved yet.
               // should investigate later
               // using timeout for now
-
-              //closeAlbum(data.album_name, filename);
+              closeAlbum(data.album_name);
             }
           });
-
+          
+          // download
           request({
             url: data.src,
             encoding: null
@@ -105,14 +134,9 @@ var initSocket = function() {
               }
             }));
 
-          Meteor.clearTimeout(timeoutHandler);
-          timeoutHandler = Meteor.setTimeout(function() {
-            console.log('TIMEOUT, we did not receive all videos');
-            console.log('saving the album with what we have now.');
-            closeAlbum(data.album_name, filename);
-          }, timeoutDuration);
           console.log('new file:', data);
           saveCount++;
+          console.log ('Received ' + saveCount + '/ ' + maxSave);
         }).run();
 
       } else if (Meteor.settings.composition.default === "video-layer") {
@@ -178,11 +202,10 @@ var getNumber = function(fullurl) {
 }
 
 var saveFile = function(data, response, buffer) {
-  var order = data.number,
-    newFile = new FS.File();
+  var newFile = new FS.File();
   //Hacks while testing on localmachine
-  if (order < 0) {
-    order = saveCount;
+  if (data.number < 0) {
+    data.number = saveCount;
   }
 
   newFile.attachData(buffer, {
@@ -193,7 +216,7 @@ var saveFile = function(data, response, buffer) {
       newFile.name(data.src.split('/').pop());
       //newFile.album = data.src.match(/snap-\d{10}/g);
       newFile.album = data.album_name;
-      newFile.order = order;
+      newFile.order = data.number;
       Images.insert(newFile);
     });
 }
