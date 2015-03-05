@@ -16,6 +16,7 @@
   "composition":{
     "default":"video-layer",
     "audio":true,
+    "videoCodec": "libx264",
     "effect":[
         {
           "name":"video-layer",

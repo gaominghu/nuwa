@@ -2,7 +2,7 @@
 
 Agregate and deliver photos
 
-## Install 
+## Install
 
 ```
 apt-get install avahi-daemon avahi-discover libnss-mdns libavahi-compat-libdnssd-dev curl build-essential graphicsmagick
@@ -27,6 +27,13 @@ $ wget http://www.deb-multimedia.org/pool/main/d/deb-multimedia-keyring/deb-mult
 $ sudo dpkg -i deb-multimedia-keyring_2014.2_all.deb
 $ sudo apt-get update
 $ sudo apt-get install deb-multimedia-keyring
+$ sudo apt-get install ffmpeg x264
+```
+
+If you're running Ubuntu 14.10, use:
+```
+$ sudo add-apt-repository ppa:kirillshkrogalev/ffmpeg-next
+$ sudo apt-get update
 $ sudo apt-get install ffmpeg x264
 ```
 
