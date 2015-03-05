@@ -9,7 +9,7 @@
   },
   "destinationPath":"/home/mina/Videos/avengers",
   "output":{
-    "bitrate": 3000
+    "bitrate": 6000
   },
   "simulateConnection":false,
   "maxImageNumber": 56,
