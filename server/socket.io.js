@@ -7,10 +7,11 @@ var Fiber = Meteor.npmRequire('fibers'),
   gm = Meteor.npmRequire('gm'),
   saveCount = 0,
   album = '',
+  // maxSave is updated on the number of socketio connexions
   maxSave = Meteor.settings.maxImageNumber,
   shouldSave = false,
   timeoutHandler = '',
-  timeoutDuration = 1000 * 20,
+  timeoutDuration = 120 * 1000,
   tempPath = '',
   base = fs.realpathSync('.');
 
@@ -19,6 +20,28 @@ var zeroPad = function (str, max) {
   return str.length < max ? zeroPad("0" + str, max) : str;
 }
 
+var initAlbum = function(album_name){
+  tempPath = pathHelper.join(process.env.PWD, '.temp');
+  album = (album_name) ? album_name : Date.now();
+  tempPath = pathHelper.join(tempPath, album.toString());
+  mkdirp.sync(tempPath);
+}
+
+var closeAlbum = function(album_name, filename){
+  console.log("closing album");
+  Meteor.clearTimeout(timeoutHandler);
+  saveCount = 0;
+  shouldSave = false;
+  Fiber(function() {
+      Meteor.call('ffmpeg', 'assembly', pathHelper.dirname(filename), function(error, result) {
+        if (error) {
+        console.log('ffmpeg - Error: ', error);
+        } else {
+        console.log('ffmpeg - Result: ', result);
+        }
+        });
+      }).run();
+}
 
 var initSocket = function() {
   Socket.update({}, {
@@ -36,27 +59,19 @@ var initSocket = function() {
     socket.on('image-saved', function(data) {
       if (Meteor.settings.composition.default === "assembly") {
         Fiber(function() {
-          var album_name = data.src.match(/snap-\d{10}/g);
+          console.log('src: ' + data.src);
+          data.album_name = data.src.match(/snap-\d*/g).toString();
+          data.number = getNumber(data.src);
+
+          if (saveCount === 0) {
+            initAlbum(data.album_name);
+          }
           if (saveCount === maxSave - 1) {
             shouldSave = true;
           }
-          if (saveCount >= maxSave) {
-            saveCount = 0;
-            shouldSave = false;
-          }
-          if (saveCount === 0) {
-            tempPath = pathHelper.join(process.env.PWD, '.temp');
-            album = (album_name) ? album_name : Date.now();
-            tempPath = pathHelper.join(tempPath, album.toString());
-            mkdirp.sync(tempPath);
-          }
 
-          data.album_name = album.toString();
-          var number = (data.src.indexOf('snap') >= 0) ? getNumber(data.src) : getNumber();
-          data.number = number;
-
-          var  filename = pathHelper.join(tempPath, zeroPad(number, 4) + '.jpg'),
-            tempfile = fs.createWriteStream(filename);
+          var  filename = pathHelper.join(tempPath, zeroPad(data.number, 4) + '.jpg'),
+          tempfile = fs.createWriteStream(filename);
 
           tempfile.on('error', function(err) {
             console.error('error on tempfile: ', err);
@@ -64,15 +79,12 @@ var initSocket = function() {
 
           tempfile.on('close', function() {
             if (shouldSave) {
-              Fiber(function() {
-                Meteor.call('ffmpeg', 'assembly', pathHelper.dirname(filename), function(error, result) {
-                  if (error) {
-                    console.log('ffmpeg - Error: ', error);
-                  } else {
-                    console.log('ffmpeg - Result: ', result);
-                  }
-                });
-              }).run();
+              // not working, this does a video with only one frame and a lot of erros
+              // I (emm) think it is because all files aren't saved yet.
+              // should investigate later
+              // using timeout for now
+
+              //closeAlbum(data.album_name, filename);
             }
           });
 
@@ -95,8 +107,9 @@ var initSocket = function() {
 
           Meteor.clearTimeout(timeoutHandler);
           timeoutHandler = Meteor.setTimeout(function() {
-            saveCount = 0;
-            console.log('socket.io - reset count...');
+            console.log('TIMEOUT, we did not receive all videos');
+            console.log('saving the album with what we have now.');
+            closeAlbum(data.album_name, filename);
           }, timeoutDuration);
           console.log('new file:', data);
           saveCount++;
@@ -146,7 +159,7 @@ var getNumber = function(fullurl) {
     //var pathname = url.pathname(fullurl).split('/').pop();
     //here we should finalize the treatment :)
     ///var nb = (fullurl.replace(Meteor.settings.machine.name, '').fullurl(Meteor.settings.machine.extension, ''));
-    var match = fullurl.match(/snap-\d{10}-(\d*)/);
+    var match = fullurl.match(/snap-\d*-(\d*)/);
     if ( match && match.length > 1) {
       var nb = match[1];
       if (nb === '') {
@@ -171,7 +184,6 @@ var saveFile = function(data, response, buffer) {
   if (order < 0) {
     order = saveCount;
   }
-  console.log(order);
 
   newFile.attachData(buffer, {
     type: 'image/jpg'
