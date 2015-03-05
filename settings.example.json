@@ -14,7 +14,7 @@
   "simulateConnection":true,
   "maxImageNumber": 64, 
   "composition":{
-    "default":"video-layer",
+    "default":"assembly",
     "audio":true,
     "effect":[
         {
@@ -27,7 +27,7 @@
           "name":"assembly",
           "source":"auto",
           "type": "clients",
-          "basename":"%04d.jpg"
+          "basename":"%*.jpg"
         }
     ]
   }

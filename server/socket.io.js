@@ -5,13 +5,11 @@ var Fiber = Meteor.npmRequire('fibers'),
   request = Meteor.npmRequire('request'),
   mkdirp = Meteor.npmRequire('mkdirp'),
   gm = Meteor.npmRequire('gm'),
-  saveCount = 0,
-  saveFinishedCount = 0,
   album = '',
+  albums = [],
   // maxSave is updated on the number of socketio connexions
   maxSave = Meteor.settings.maxImageNumber,
-  timeoutHandler = '',
-  timeoutDuration = 30 * 1000,
+  timeoutDuration = 240 * 1000,
   tempPath = '',
   base = fs.realpathSync('.');
 
@@ -42,23 +40,24 @@ var getFolderPath = function(album_name){
 
 var initAlbum = function(album_name){
   mkdirp.sync(getFolderPath(album_name));
+  albums[album_name] = {
+    uid: album_name,
+    saveCount: 0,
+    saveFinishedCount: 0
+  };
+  console.log('['+albums[album_name].uid+']init album');
 
-  Meteor.clearTimeout(timeoutHandler);
-  timeoutHandler = Meteor.setTimeout(function() {
-    console.log('TIMEOUT, we did not receive all videos');
-    console.log('saving the album with what we have now.');
+  //Meteor.clearTimeout(timeoutHandler);
+  albums[album_name].timeoutHandler = Meteor.setTimeout(function() {
+    console.log('['+albums[album_name].uid+']TIMEOUT, we did not receive all videos');
+    console.log('['+albums[album_name].uid+']saving the album with what we have now.');
     closeAlbum(album_name);
   }, timeoutDuration);
-
-  saveCount = 0;
-  saveFinishedCount = 0;
 }
 
 var closeAlbum = function(album_name){
-  console.log("closing album");
-  Meteor.clearTimeout(timeoutHandler);
-  saveCount = 0;
-  saveFinishedCount = 0;
+  console.log('['+albums[album_name].uid+']closing album');
+  Meteor.clearTimeout(albums[album_name].timeoutHandler);
   ffmpegAssembly(album_name);
 }
 
@@ -93,9 +92,10 @@ var initSocket = function() {
           data.album_name = getAlbumName(data.src);
           data.number = getNumber(data.src);
 
-          if (saveCount === 0) {
+          if (!albums[data.album_name]){
             initAlbum(data.album_name);
           }
+
 
           var  filename = pathHelper.join(getFolderPath(data.album_name), zeroPad(data.number, 4) + '.jpg'),
           tempfile = fs.createWriteStream(filename);
@@ -105,13 +105,9 @@ var initSocket = function() {
           });
 
           tempfile.on('close', function() {
-            saveFinishedCount++;
-            console.log ('Saved ' + saveFinishedCount + '/ ' + maxSave);
-            if (saveFinishedCount === maxSave) {
-              // not working, this does a video with only one frame and a lot of erros
-              // I (emm) think it is because all files aren't saved yet.
-              // should investigate later
-              // using timeout for now
+            albums[data.album_name].saveFinishedCount++;
+            console.log ('['+albums[data.album_name].uid+']Saved ' + albums[data.album_name].saveFinishedCount + '/ ' + maxSave);
+            if (albums[data.album_name].saveFinishedCount === maxSave) {
               closeAlbum(data.album_name);
             }
           });
@@ -135,8 +131,8 @@ var initSocket = function() {
             }));
 
           console.log('new file:', data);
-          saveCount++;
-          console.log ('Received ' + saveCount + '/ ' + maxSave);
+          albums[data.album_name].saveCount++;
+          console.log ('['+albums[data.album_name].uid+']Received ' + albums[data.album_name].saveCount + '/ ' + maxSave);
         }).run();
 
       } else if (Meteor.settings.composition.default === "video-layer") {
@@ -197,7 +193,7 @@ var getNumber = function(fullurl) {
       return nb;
     }
     else {
-      return saveCount;
+      return -1;
     }
 }
 
@@ -205,7 +201,7 @@ var saveFile = function(data, response, buffer) {
   var newFile = new FS.File();
   //Hacks while testing on localmachine
   if (data.number < 0) {
-    data.number = saveCount;
+    data.number = albums[data.album_name].saveCount;
   }
 
   newFile.attachData(buffer, {
