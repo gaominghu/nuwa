@@ -53,3 +53,8 @@ In a folder with images 0001.jpg, 0002.jpg, ...
 ```
 ffmpeg -framerate 10 -i %04d.jpg -c:v libx264 -pix_fmt yuv420p out.mp4
 ```
+
+If you have missing files, you'd better use
+```
+ffmpeg -framerate 10 -pattern_type glob -i "*.jpg" -c:v libx264 -pix_fmt yuv420p out.mp4
+```

@@ -1,18 +1,18 @@
 {
   "service":{
-      "name":"ouba",
+      "name":"nuwa",
       "port":8080
   },
   "machine":{
     "name":"voldenuit",
     "extension":".local" 
   },
-  "destinationPath":"/Users/gabrielstuff/Desktop",
+  "destinationPath":"nuwavideos",
   "output":{
     "bitrate": 3000
   },
-  "simulateConnection":true,
-  "maxImageNumber": 64,
+  "simulateConnection":false,
+  "maxImageNumber": 56,
   "composition":{
     "default":"assembly",
     "audio":false,
@@ -27,7 +27,7 @@
           "name":"assembly",
           "source":"auto",
           "type": "clients",
-          "basename":"%04d.jpg"
+          "basename":"%*.jpg"
         }
     ]
   }

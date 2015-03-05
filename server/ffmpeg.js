@@ -3,11 +3,12 @@ var _ = Meteor.npmRequire('lodash'),
   fs = Meteor.npmRequire('fs.extra'),
   stream = Meteor.npmRequire("stream"),
   videoCodec = 'libx264', //mpeg4
+  //videoCodec = 'mpeg4', //mpeg4
   bitrate = Meteor.settings.output.bitrate,
   outputOptions = [
     '-movflags +faststart',
     '-threads 0',
-    '-b:v ' + bitrate + 'k',
+    //'-vcodec ' + bitrate + 'k',
     '-maxrate ' + bitrate + 'k',
     '-bufsize ' + 2 * bitrate + 'k'
   ];
@@ -52,9 +53,9 @@ effectList = {
       .videoCodec(videoCodec)
       .outputOptions(outputOptions)
       .on('error', function(err) {
-        console.log('An error occurred whiile merging: ', err);
+        console.log('An error occurred while merging: ', err);
         //throw new Meteor.Error( 500, 'There was an error processing sound.' );
-        resolveCallback(new Error('An error occurred whiile merging: ', err));
+        resolveCallback(new Error('An error occurred while merging: ', err));
       })
       .on('progress', function(progress) {
         var date = Date();
