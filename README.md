@@ -19,6 +19,19 @@ and put your client folder
 $ cp -r /path/to/myclientfolder projects/clients
 ```
 
+## Install ffmpeg
+as mentioned on the official [ffmpeg distrib website](http://www.deb-multimedia.org/)
+
+```
+$ wget http://www.deb-multimedia.org/pool/main/d/deb-multimedia-keyring/deb-multimedia-keyring_2014.2_all.deb
+$ sudo dpkg -i deb-multimedia-keyring_2014.2_all.deb
+$ sudo apt-get update
+$ sudo apt-get install deb-multimedia-keyring
+$ sudo apt-get install ffmpeg x264
+```
+
+
+
 ## Run
 
 `meteor --settings settings.json`
@@ -33,3 +46,10 @@ nuwa is waiting for url in the form of : `http://url-01.local/folder/file.jpg`, 
 
 [ ] Add bonjour as package
 [x] Add compositing option settings
+
+## FFmpeg test command
+
+In a folder with images 0001.jpg, 0002.jpg, ...
+```
+ffmpeg -framerate 10 -i %04d.jpg -c:v libx264 -pix_fmt yuv420p out.mp4
+```
