@@ -15,7 +15,7 @@
   "maxImageNumber": 56,
   "composition":{
     "default":"assembly",
-    "videoCodec": "mpeg4",
+    "videoCodec": "libx264",
     "audio":false,
     "effect":[
         {

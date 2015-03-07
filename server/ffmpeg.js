@@ -1,3 +1,4 @@
+
 var _ = Meteor.npmRequire('lodash'),
   pathHelper = Meteor.npmRequire('path'),
   fs = Meteor.npmRequire('fs.extra'),
@@ -8,6 +9,7 @@ var _ = Meteor.npmRequire('lodash'),
   outputOptions = [
     '-movflags +faststart',
     '-threads 0',
+    '-pix_fmt yuv420p',
     //'-vcodec ' + bitrate + 'k',
     '-maxrate ' + bitrate + 'k',
     '-bufsize ' + 2 * bitrate + 'k'
@@ -24,16 +26,16 @@ effectList = {
     //console.log(media);
     console.log('media:', typeof media);
     //Could be improved
-    /*console.log(Buffer.isBuffer(media));
-    if(typeof media !== 'string'){
+    //console.log(Buffer.isBuffer(media));
+    //if(typeof media !== 'string'){
       //var bufferStream = new stream.Transform();
-      var buffer = new Buffer( media );
-      var bufferStream = new stream.PassThrough();
-      bufferStream.end( buffer );
-      media = bufferStream;
+     // var buffer = new Buffer( media );
+     // var bufferStream = new stream.PassThrough();
+     // bufferStream.end( buffer );
+     // media = bufferStream;
       //bufferStream.push(media);
       //media = bufferStream;
-    }*/
+    //}
 
     var basepath = pathHelper.join(process.env.PWD, 'projects', param.type);
     //would be nice to use : 'crop=640:360:0:0'

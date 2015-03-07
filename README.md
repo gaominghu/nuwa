@@ -31,11 +31,34 @@ $ sudo apt-get install ffmpeg x264
 ```
 
 If you're running Ubuntu 14.10, use:
+
 ```
 $ sudo add-apt-repository ppa:kirillshkrogalev/ffmpeg-next
 $ sudo apt-get update
 $ sudo apt-get install ffmpeg x264
 ```
+
+If you want to have fun :
+```
+$ apt-get install build-essential subversion git-core yasm libgpac-dev libdirac-dev libgsm1-dev libschroedinger-dev libspeex-dev libvorbis-dev libopenjpeg-dev libdc1394-22-dev libsdl1.2-dev zlib1g-dev texi2html libfaac-dev libfaad-dev libmp3lame-dev libtheora-dev libopencore-amrnb-dev libopencore-amrwb-dev libvpx-dev libfreetype6-dev frei0r-plugins-dev librtmp-dev  libx264-dev libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev
+$ git clone git://git.videolan.org/x264.git
+$ cd x264 && ./configure --enable-shared
+$ make && sudo make install
+$ sudo apt-get install yasm
+$ git clone git://source.ffmpeg.org/ffmpeg.git
+$ cd ffmpeg/ && git checkout n2.5.4
+$ ./configure --enable-shared --enable-libx264 --enable-gpl
+$ make && sudo make install
+$ make tools/qt-faststart
+$ sudo make install tools/qt-faststart
+$ cd ../x264 && make distclean
+$ ./configure --enable-static
+$ make && sudo make install
+$ sudo ldconfig
+
+
+```
+
 
 
 
