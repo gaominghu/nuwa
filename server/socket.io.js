@@ -43,9 +43,10 @@ var initAlbum = function(album_name){
   albums[album_name] = {
     uid: album_name,
     saveCount: 0,
-    saveFinishedCount: 0
+    saveFinishedCount: 0,
+    nbExpectedImages: io.sockets.sockets.length
   };
-  console.log('['+albums[album_name].uid+']init album');
+  console.log('['+albums[album_name].uid+']init album with ' + albums[album_name].nbExpectedImages + ' expected pictures');
 
   //Meteor.clearTimeout(timeoutHandler);
   albums[album_name].timeoutHandler = Meteor.setTimeout(function() {
@@ -83,6 +84,7 @@ var initSocket = function() {
   io = Meteor.npmRequire('socket.io')(Meteor.settings.service.port);
   io.on('connection', function(socket) {
     console.log('socket.io: connection from: ', socket.client.conn.remoteAddress);
+    console.log('socket.io: number of connections: ', io.sockets.sockets.length);
     saveOrUpdateSocketState(socket, true);
 
     socket.on('image-saved', function(data) {
@@ -106,8 +108,8 @@ var initSocket = function() {
 
           tempfile.on('close', function() {
             albums[data.album_name].saveFinishedCount++;
-            console.log ('['+albums[data.album_name].uid+']Saved ' + albums[data.album_name].saveFinishedCount + '/ ' + maxSave + ' - file ' + data.number);
-            if (albums[data.album_name].saveFinishedCount === maxSave) {
+            console.log ('['+albums[data.album_name].uid+']Saved ' + albums[data.album_name].saveFinishedCount + '/ ' + albums[data.album_name].nbExpectedImages+ ' - file ' + data.number);
+            if (albums[data.album_name].saveFinishedCount >= albums[data.album_name].nbExpectedImages) {
               closeAlbum(data.album_name);
             }
           });
@@ -133,7 +135,7 @@ var initSocket = function() {
 
           console.log('new file:', data);
           albums[data.album_name].saveCount++;
-          console.log ('['+albums[data.album_name].uid+']Received ' + albums[data.album_name].saveCount + '/ ' + maxSave);
+          console.log ('['+albums[data.album_name].uid+']Received ' + albums[data.album_name].saveCount + '/ ' + albums[data.album_name].nbExpectedImages);
         }).run();
 
       } else if (Meteor.settings.composition.default === "video-layer") {
@@ -170,6 +172,8 @@ var initSocket = function() {
       }
     })
       .on('disconnect', function() {
+        console.log('socket.io: disconnection from: ', socket.client.conn.remoteAddress);
+        console.log('socket.io: number of connections: ', io.sockets.sockets.length);
         saveOrUpdateSocketState(socket, false);
       });
   });
@@ -237,7 +241,7 @@ var saveOrUpdateSocketState = function(socket, state) {
           updateMaxImageNumber();
         });
 
-      console.log('socket.io - ', socket.handshake.headers, ' - state: ', state);
+      //console.log('socket.io - ', socket.handshake.headers, ' - state: ', state);
     }).run();
   }
 }
@@ -247,7 +251,7 @@ var updateMaxImageNumber = function() {
     maxSave = Socket.find({
       connected: true
     }).count();
-    console.log('socket.io - maxNumber: ', maxSave);
+    //console.log('socket.io - maxNumber: ', maxSave);
   }).run()
 }
 
